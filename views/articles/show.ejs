@@ -5,117 +5,340 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= article.title %> - MindFlow</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
     <style>
-        .article-content { font-size: 1.1rem; line-height: 1.8; color: #2c3e50; }
-        .article-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0; }
-        .article-content h1, h2, h3 { margin-top: 1.5rem; color: #000; }
-        .article-content pre { background: #f8f9fa; padding: 1rem; border-radius: 6px; overflow-x: auto; }
-        .article-content blockquote { border-left: 4px solid #ccc; padding-left: 1rem; color: #666; }
+        /* === 1. 全局背景 (保持一致) === */
+        body {
+            background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        /* === 2. 玻璃面板 === */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85); /* 阅读页稍微不透明一点，保证文字清晰 */
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* === 3. 导航栏 === */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 12px 0;
+        }
+        .brand-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* === 4. 文章头部 Hero 区域 === */
+        .article-hero {
+            width: 100%;
+            height: 350px;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: -80px; /* 让下面的内容卡片上浮遮住一点，更有层次感 */
+            z-index: 1;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 无封面时的默认渐变头图 */
+        .hero-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-placeholder i {
+            font-size: 5rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* === 5. 文章内容容器 === */
+        .article-container {
+            position: relative;
+            z-index: 2; /* 浮在头图上面 */
+            padding: 60px; /* 大留白 */
+        }
+
+        /* 标题样式 */
+        .article-title {
+            font-weight: 800;
+            color: #2d3436;
+            margin-bottom: 1.5rem;
+            line-height: 1.3;
+        }
+
+        /* 作者信息栏 */
+        .author-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 正文排版优化 */
+        .article-content {
+            font-size: 1.15rem; /* 字号加大 */
+            line-height: 1.9;   /* 行高加大，呼吸感 */
+            color: #444;
+        }
+        .article-content h1, .article-content h2 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 700; color: #2d3436; }
+        .article-content p { margin-bottom: 1.5rem; }
+        .article-content img { max-width: 100%; border-radius: 12px; margin: 20px 0; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .article-content blockquote {
+            border-left: 4px solid #667eea;
+            background: rgba(102, 126, 234, 0.05);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            color: #555;
+            font-style: italic;
+        }
+        .article-content pre {
+            background: #2d3436;
+            color: #dfe6e9;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        /* === 6. 评论区样式 === */
+        .comment-box {
+            margin-top: 40px;
+            padding: 40px;
+        }
+        .comment-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .comment-avatar {
+            width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+        }
+        .comment-bubble {
+            background: #f8f9fa;
+            padding: 12px 18px;
+            border-radius: 0 18px 18px 18px;
+            position: relative;
+        }
+        .comment-meta { font-size: 0.8rem; color: #888; margin-bottom: 4px; }
+
+        /* 按钮 */
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none; color: white;
+        }
+        .btn-gradient-primary:hover {
+            opacity: 0.9; color: white; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .article-container { padding: 30px 20px; }
+            .article-hero { height: 250px; border-radius: 0; margin-bottom: -40px; }
+            .article-title { font-size: 2rem; }
+        }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
     <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="/">MindFlow</a>
-            <div class="navbar-nav ms-auto">
+            <a class="navbar-brand brand-gradient d-flex align-items-center gap-2" href="/">
+                <i class="bi bi-wind"></i> MindFlow
+            </a>
+            <div class="ms-auto">
                 <% if (currentUser) { %>
-                     <a href="/auth/profile" class="nav-link text-light me-2">
-                        <i class="bi bi-person-fill"></i> <%= currentUser %>
-                     </a>
+                    <a href="/auth/profile" class="text-decoration-none text-dark me-3 fw-bold small">
+                        <%= currentUser %>
+                    </a>
                 <% } %>
-                <a href="/" class="nav-link text-light">返回首页</a>
+                <a href="/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left"></i> 返回列表
+                </a>
             </div>
         </div>
     </nav>
 
-    <div class="container">
-        
-        <!-- ================= 文章卡片 ================= -->
-        <div class="card shadow-sm mb-5">
-            <div class="card-body p-4 p-md-5">
-                <!-- 标题 -->
-                <h1 class="fw-bold mb-3 display-5"><%= article.title %></h1>
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
                 
-                <!-- 信息栏：作者、时间、操作按钮 -->
-                <div class="d-flex flex-wrap justify-content-between align-items-center text-muted border-bottom pb-3 mb-4">
-                    <div class="mb-2">
-                        作者: 
-                        <strong class="text-primary me-2">
-                            @<%= article.author ? article.author.username : '匿名' %>
-                        </strong>
-                        | 发布于: <%= article.createdAt.toLocaleString() %>
-                    </div>
-
-                    <!-- ★★★ 权限操作区：只有作者本人 或 管理员 可见 ★★★ -->
-                    <% if (currentUser && ((article.author && article.author.username === currentUser) || isAdmin)) { %>
-                        <div class="d-flex gap-2">
-                            <!-- 编辑按钮 -->
-                            <a href="/articles/edit/<%= article.id %>" class="btn btn-outline-primary btn-sm">
-                                ✏️ 编辑
-                            </a>
-                            <!-- 删除按钮 -->
-                            <form action="/articles/<%= article.id %>?_method=DELETE" method="POST" onsubmit="return confirm('确定要删除这篇文章吗？');">
-                                <button type="submit" class="btn btn-outline-danger btn-sm">🗑 删除</button>
-                            </form>
+                <!-- 1. 顶部 Hero 图 (有图显图，没图显渐变) -->
+                <div class="article-hero">
+                    <% if (article.cover) { %>
+                        <img src="<%= article.cover %>" class="hero-img" alt="Cover">
+                    <% } else { %>
+                        <div class="hero-placeholder">
+                            <i class="bi bi-journal-text"></i>
                         </div>
                     <% } %>
                 </div>
 
-                <!-- 正文内容 (渲染 Markdown) -->
-                <div class="article-content">
-                    <%- htmlContent %>
+                <!-- 2. 文章主体卡片 -->
+                <div class="glass-panel article-container">
+                    
+                    <!-- 标题 -->
+                    <h1 class="article-title display-5"><%= article.title %></h1>
+
+                    <!-- 作者信息栏 -->
+                    <div class="author-meta">
+                        <!-- 头像逻辑 -->
+                        <% let authorAvatar = (article.author && article.author.avatar) ? article.author.avatar : `https://ui-avatars.com/api/?name=${article.author ? article.author.username : 'A'}&background=0D8ABC&color=fff`; %>
+                        <img src="<%= authorAvatar %>" class="author-avatar">
+                        
+                        <div class="flex-grow-1">
+                            <div class="fw-bold"><%= article.author ? article.author.username : '匿名作者' %></div>
+                            <div class="small text-muted">
+                                发布于 <%= article.createdAt.toLocaleString() %> · <%= article.likes.length %> 点赞
+                            </div>
+                        </div>
+
+                        <!-- 权限操作按钮 -->
+                        <% if (currentUser && ((article.author && article.author.username === currentUser) || isAdmin)) { %>
+                            <div class="d-flex gap-2">
+                                <a href="/articles/edit/<%= article.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                    <i class="bi bi-pencil"></i> 编辑
+                                </a>
+                                <form action="/articles/<%= article.id %>?_method=DELETE" method="POST" onsubmit="return confirm('确定要删除吗？');">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                        <i class="bi bi-trash"></i> 删除
+                                    </button>
+                                </form>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <!-- 正文内容 -->
+                    <div class="article-content">
+                        <%- htmlContent %>
+                    </div>
+
                 </div>
 
-                <!-- 底部返回 -->
-                <div class="mt-5 pt-4 border-top">
-                    <a href="/" class="btn btn-outline-secondary">&larr; 返回文章列表</a>
+                <!-- 3. 评论区 -->
+                <div class="glass-panel comment-box">
+                    <h4 class="fw-bold mb-4"><i class="bi bi-chat-dots-fill text-primary"></i> 评论区</h4>
+                    
+                    <!-- 评论输入框 -->
+                    <% if (currentUser) { %>
+                        <div class="d-flex gap-3 mb-5 align-items-start">
+                            <img src="<%= currentAvatar ? currentAvatar : `https://ui-avatars.com/api/?name=${currentUser}&background=0D8ABC&color=fff` %>" class="rounded-circle border" width="40" height="40" style="object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <textarea id="comment-content" class="form-control mb-2" rows="3" placeholder="写下你的想法..." style="background: rgba(255,255,255,0.5); border-radius: 12px;"></textarea>
+                                <div class="text-end">
+                                    <button onclick="submitComment()" class="btn btn-gradient-primary rounded-pill px-4">发布</button>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="alert alert-light border text-center mb-4 rounded-3">
+                            请 <a href="/auth/login" class="fw-bold text-decoration-none">登录</a> 后参与讨论
+                        </div>
+                    <% } %>
+
+                    <!-- 评论列表 (JS填充) -->
+                    <div id="comment-list">
+                        <div class="text-center text-muted py-3">加载评论中...</div>
+                    </div>
                 </div>
+
             </div>
         </div>
-
-
-        <!-- ================= 评论区 (Ajax) ================= -->
-        <div class="card shadow-sm mb-5">
-            <div class="card-header bg-white py-3">
-                <h5 class="m-0 fw-bold">💬 评论区</h5>
-            </div>
-            <div class="card-body">
-                
-                <!-- 1. 评论输入框 -->
-                <% if (currentUser) { %>
-                    <div class="d-flex gap-2 align-items-start mb-4">
-                        <textarea 
-                            id="comment-content" 
-                            class="form-control" 
-                            rows="2" 
-                            placeholder="写下你的想法..."
-                        ></textarea>
-                        <button onclick="submitComment()" class="btn btn-primary text-nowrap px-4">发表</button>
-                    </div>
-                <% } else { %>
-                    <div class="alert alert-secondary mb-4">
-                        请 <a href="/auth/login" class="fw-bold">登录</a> 后发表评论
-                    </div>
-                <% } %>
-
-                <!-- 2. 评论列表容器 -->
-                <div id="comment-list">
-                    <div class="text-center text-muted py-3">正在加载评论...</div>
-                </div>
-
-            </div>
-        </div>
-
     </div>
 
-    <!-- ================= 脚本区域 ================= -->
+    <!-- 底部垫高 -->
+    <div class="py-4"></div>
+
+    <!-- 脚本 -->
     <script>
         const articleId = "<%= article.id %>";
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/comment.js"></script>
+        
+        // 页面加载获取评论
+        document.addEventListener('DOMContentLoaded', loadComments);
 
+        async function loadComments() {
+            const res = await fetch(`/api/comments?articleId=${articleId}`);
+            const comments = await res.json();
+            const list = document.getElementById('comment-list');
+            list.innerHTML = '';
+
+            if (comments.length === 0) {
+                list.innerHTML = '<div class="text-center text-muted opacity-50 py-3">暂无评论，来抢沙发吧~</div>';
+                return;
+            }
+
+            comments.forEach(comment => {
+                // 简单的头像逻辑
+                const avatar = `https://ui-avatars.com/api/?name=User&background=random&color=fff&size=40`;
+                const date = new Date(comment.createdAt).toLocaleString();
+                
+                const html = `
+                    <div class="comment-item">
+                        <img src="${avatar}" class="comment-avatar">
+                        <div>
+                            <div class="comment-meta">用户 • ${date}</div>
+                            <div class="comment-bubble">
+                                ${comment.content}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                list.innerHTML += html;
+            });
+        }
+
+        async function submitComment() {
+            const input = document.getElementById('comment-content');
+            const content = input.value.trim();
+            if(!content) return;
+
+            const res = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ articleId, content })
+            });
+
+            if (res.ok) {
+                input.value = '';
+                loadComments(); // 重新加载
+            } else {
+                alert('评论失败');
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

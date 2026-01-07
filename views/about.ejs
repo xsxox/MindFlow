@@ -6,104 +6,195 @@
     <title>关于 MindFlow</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
     <style>
-        .hero-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 80px 0;
+        /* === 1. 复用首页的极简背景 === */
+        body {
+            background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            color: #444;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        .feature-icon {
-            font-size: 2.5rem;
-            color: #0d6efd;
-            margin-bottom: 1rem;
+
+        /* === 2. 玻璃面板通用样式 === */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px; /* 圆角稍微大一点 */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
         }
+        
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        /* === 3. 导航栏样式 (保持一致) === */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 12px 0;
+        }
+
+        /* 品牌渐变字 */
+        .brand-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* 渐变按钮 */
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-gradient-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+            color: white;
+        }
+
+        /* === 4. 特性图标渐变 === */
+        .feature-icon-wrapper {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.1); /* 淡紫色背景 */
+            color: #667eea;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-panel:hover .feature-icon-wrapper {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: rotateY(180deg); /* 趣味旋转效果 */
+        }
+
+        /* === 5. 技术栈徽章 === */
         .tech-badge {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.05);
+            color: #555;
+            padding: 8px 16px;
+            border-radius: 50px;
             font-size: 0.9rem;
-            padding: 8px 15px;
             margin: 5px;
-            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+        }
+        .tech-badge:hover {
+            color: #667eea;
+            border-color: #667eea;
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
+<body>
 
-    <!-- 导航栏 (保持一致) -->
-    <nav class="navbar navbar-dark bg-dark">
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">MindFlow</a>
-            <a href="/" class="btn btn-outline-light btn-sm">返回创作</a>
+            <a class="navbar-brand brand-gradient d-flex align-items-center gap-2" href="/">
+                <i class="bi bi-wind"></i> MindFlow
+            </a>
+            <div class="ms-auto">
+                <a href="/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left"></i> 返回首页
+                </a>
+            </div>
         </div>
     </nav>
 
-    <!-- 1. Hero 区域：品牌理念 -->
-    <section class="hero-section text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold mb-3">思维流淌的地方</h1>
-            <p class="lead text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">
+    <!-- 主体内容 -->
+    <div class="container py-5">
+        
+        <!-- 1. Hero 区域 -->
+        <div class="text-center mb-5 pb-3">
+            <h1 class="display-3 fw-bold mb-3 brand-gradient">思维流淌的地方</h1>
+            <p class="lead text-secondary mx-auto" style="max-width: 600px;">
                 MindFlow 是一个专注于极简写作与深度交流的内容平台。<br>
                 我们相信，每一个微小的想法，都值得被记录和分享。
             </p>
-            <a href="https://github.com/xsxox/MindFlow" target="_blank" class="btn btn-dark btn-lg px-4 gap-3">
-                <i class="bi bi-github"></i> 访问 GitHub
-            </a>
+            <div class="mt-4">
+                <a href="https://github.com" target="_blank" class="btn btn-gradient-primary btn-lg rounded-pill px-5 shadow-sm">
+                    <i class="bi bi-github"></i> 访问 GitHub
+                </a>
+            </div>
         </div>
-    </section>
 
-    <!-- 2. 核心特性：像产品介绍一样展示功能 -->
-    <section class="py-5 bg-white">
-        <div class="container">
-            <div class="row g-4 text-center">
-                <div class="col-md-4">
-                    <div class="p-3">
-                        <i class="bi bi-markdown feature-icon"></i>
-                        <h4 class="fw-bold">Markdown 支持</h4>
-                        <p class="text-muted">原生的 Markdown 渲染引擎，让排版回归纯粹，专注于内容创作本身。</p>
+        <!-- 2. 核心特性 (3张玻璃卡片) -->
+        <div class="row g-4 mb-5">
+            <!-- Markdown -->
+            <div class="col-md-4">
+                <div class="glass-panel p-5 text-center h-100">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-markdown"></i>
                     </div>
+                    <h4 class="fw-bold mb-3">Markdown 支持</h4>
+                    <p class="text-muted">原生的 Markdown 渲染引擎，让排版回归纯粹，专注于内容创作本身，支持代码高亮与即时预览。</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-3">
-                        <i class="bi bi-chat-square-quote feature-icon"></i>
-                        <h4 class="fw-bold">实时交互</h4>
-                        <p class="text-muted">基于 Ajax 的无刷新评论系统，让思想的碰撞更加流畅，无需等待页面重载。</p>
+            </div>
+
+            <!-- 实时交互 -->
+            <div class="col-md-4">
+                <div class="glass-panel p-5 text-center h-100">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-lightning-charge"></i>
                     </div>
+                    <h4 class="fw-bold mb-3">实时交互</h4>
+                    <p class="text-muted">基于 Ajax 技术构建的无刷新评论系统，让思想的碰撞更加流畅，拒绝页面的频繁重载。</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="p-3">
-                        <i class="bi bi-shield-lock feature-icon"></i>
-                        <h4 class="fw-bold">权限管理</h4>
-                        <p class="text-muted">完善的 RBAC 角色权限控制，保障创作者的内容安全与管理便捷。</p>
+            </div>
+
+            <!-- 权限管理 -->
+            <div class="col-md-4">
+                <div class="glass-panel p-5 text-center h-100">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-shield-lock"></i>
                     </div>
+                    <h4 class="fw-bold mb-3">权限管理</h4>
+                    <p class="text-muted">完善的 RBAC 角色权限控制体系，为创作者提供安全的内容管理环境，支持管理员高级操作。</p>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- 3. 技术架构：把作业要求包装成技术栈 -->
-    <section class="py-5 bg-light">
-        <div class="container text-center">
+        <!-- 3. 技术架构 (Under the Hood) -->
+        <div class="glass-panel p-5 text-center">
             <h3 class="fw-bold mb-4">Under the Hood</h3>
             <p class="text-muted mb-4">MindFlow 基于现代化的 Web 技术栈构建，追求性能与开发体验的平衡。</p>
             
-            <div class="d-flex justify-content-center flex-wrap" style="max-width: 700px; margin: 0 auto;">
-                <span class="badge bg-success tech-badge">Node.js</span>
-                <span class="badge bg-secondary tech-badge">Express</span>
-                <span class="badge bg-danger tech-badge">MongoDB</span>
-                <span class="badge bg-warning text-dark tech-badge">EJS SSR</span>
-                <span class="badge bg-info text-dark tech-badge">Bootstrap 5</span>
-                <span class="badge bg-primary tech-badge">MVC Architecture</span>
+            <div class="d-flex justify-content-center flex-wrap" style="max-width: 800px; margin: 0 auto;">
+                <span class="tech-badge"><i class="bi bi-filetype-js"></i> Node.js</span>
+                <span class="tech-badge"><i class="bi bi-server"></i> Express</span>
+                <span class="tech-badge"><i class="bi bi-database"></i> MongoDB</span>
+                <span class="tech-badge"><i class="bi bi-window"></i> EJS SSR</span>
+                <span class="tech-badge"><i class="bi bi-bootstrap"></i> Bootstrap 5</span>
+                <span class="tech-badge"><i class="bi bi-arrow-repeat"></i> Ajax / Fetch</span>
+                <span class="tech-badge"><i class="bi bi-layout-wtf"></i> MVC 架构</span>
             </div>
         </div>
-    </section>
 
-    <!-- 4. 底部：极简风格 -->
-    <footer class="text-center py-4 mt-auto bg-white border-top">
-        <div class="container">
-            <p class="mb-0 text-muted">
-                Created with <i class="bi bi-heart-fill text-danger"></i> by 
-                <strong>sunrise</strong>
-            </p>
-            <small class="text-muted">Open Source Project &copy; 2026</small>
+        <!-- 底部版权 -->
+        <div class="text-center mt-5 text-muted small">
+            <p>&copy; 2026 MindFlow Project. Designed by sunrise. <i class="bi bi-heart-fill text-danger"></i></p>
         </div>
-    </footer>
+
+    </div>
 
 </body>
 </html>

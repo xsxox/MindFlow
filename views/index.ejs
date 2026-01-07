@@ -3,152 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindFlow - 首页</title>
+    <title>MindFlow - My Life</title>
     <!-- 引入 Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- 引入 Bootstrap Icons -->
+    <!-- 引入图标库 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
     <style>
-        .card { transition: transform 0.2s; }
-        .card:hover { transform: translateY(-3px); }
-        .cover-img { height: 200px; object-fit: cover; }
+        /* === 1. 全局背景 === */
+        body {
+            background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            color: #444;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* === 2. 玻璃面板通用样式 === */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        /* 普通卡片悬停变白 (排除搜索卡片) */
+        .glass-panel:not(.search-box-card):hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* === 3. 导航栏样式 === */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            z-index: 1030;
+            padding: 12px 0;
+        }
+
+        .brand-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            font-size: 1.5rem;
+        }
+
+        .nav-link-custom {
+            color: #666;
+            font-weight: 500;
+            padding: 8px 16px !important;
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin: 0 4px;
+        }
+        .nav-link-custom:hover {
+            color: #000;
+            background: rgba(0,0,0,0.05);
+        }
+        .nav-link-custom.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* 按钮样式 */
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none; color: white; transition: all 0.3s ease;
+        }
+        .btn-gradient-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3); color: white;
+        }
+        .btn-glass-secondary {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(118, 75, 162, 0.3); color: #764ba2;
+            backdrop-filter: blur(4px); transition: all 0.3s ease;
+        }
+        .btn-glass-secondary:hover {
+            background: #fff; color: #5b3a85;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transform: translateY(-2px);
+        }
+
+        /* === 4. 文章卡片 === */
+        .article-card {
+            border: none;
+            overflow: hidden;
+            border-radius: 16px;
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+            transition: transform 0.3s ease;
+            position: relative; /* 关键 */
+        }
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+
+        .card-img-wrap {
+            height: 180px; 
+            overflow: hidden;
+            position: relative;
+            background-color: #f8f9fa;
+        }
+        .card-img-wrap img {
+            width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease;
+        }
+        .article-card:hover .card-img-wrap img { transform: scale(1.05); }
+
+        .default-placeholder {
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
+            display: flex; align-items: center; justify-content: center; opacity: 0.8;
+        }
+        .default-placeholder i { font-size: 4rem; color: white; opacity: 0.5; }
+
+        .card-content {
+            padding: 20px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.9), #ffffff);
+        }
+
+        /* === 5. 左侧组件 === */
+        .sidebar-profile-img {
+            width: 80px; height: 80px; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        /* 侧边栏卡片悬停效果 */
+        .hover-card-link:hover .sidebar-profile-img {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+        .hover-card-link:hover h5 {
+            color: #667eea;
+        }
+
+        /* 搜索卡片 (紫色) */
+        .search-box-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important; border: none;
+        }
+        .search-box-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+        }
+
+        .custom-search-input {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important; color: white !important;
+        }
+        .custom-search-input::placeholder { color: rgba(255, 255, 255, 0.7) !important; }
+        .custom-search-input:focus {
+            background: rgba(255, 255, 255, 0.3) !important; box-shadow: none !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .meta-badge {
+            font-size: 0.75rem; padding: 4px 8px; background: #f0f2f5; color: #666;
+            border-radius: 6px; margin-right: 8px; display: inline-flex; align-items: center; gap: 4px;
+        }
+
+        .sidebar-sticky { position: sticky; top: 100px; z-index: 10; }
+
+        /* === 6. 操作按钮 (z-index 修复抽搐) === */
+        .action-buttons {
+            position: relative;
+            z-index: 100; /* 极高层级 */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-like-container {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+        .btn-like-container:hover {
+            background-color: rgba(255, 107, 107, 0.1);
+        }
+        .btn-like {
+            color: #ccc;
+            font-size: 1.1rem;
+            transition: transform 0.2s;
+        }
+        .btn-like.liked { color: #ff6b6b; }
+        .btn-like:hover { transform: scale(1.1); }
+        .like-count { font-size: 0.85rem; margin-left: 4px; color: #888; }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
-    <!-- ================= 导航栏 ================= -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top mb-4 shadow-sm">
+    <!-- ================= 顶部导航 ================= -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom sticky-top mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">MindFlow</a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand brand-gradient d-flex align-items-center gap-2" href="/">
+                <i class="bi bi-wind"></i> MindFlow
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
-                    
-                    <!-- 1. 搜索框 -->
-                    <form action="/articles/search" method="GET" class="d-flex me-2">
-                        <div class="input-group input-group-sm">
-                            <input class="form-control" type="search" name="q" placeholder="搜索文章..." required>
-                            <button class="btn btn-secondary" type="submit"><i class="bi bi-search"></i></button>
-                        </div>
-                    </form>
-
-                    <!-- 2. 用户状态判断 -->
+            <div class="collapse navbar-collapse" id="navContent">
+                <!-- 中间导航 -->
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link nav-link-custom active" href="/"><i class="bi bi-house-door"></i> 首页</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-custom" href="/about"><i class="bi bi-stars"></i> 关于</a></li>
+                </ul>
+                <!-- 右侧功能区 -->
+                <ul class="navbar-nav ms-auto align-items-center gap-3">
                     <% if (currentUser) { %>
-                        <!-- 个人中心入口 -->
-                        <a href="/auth/profile" class="text-decoration-none me-2">
-                            <span class="badge bg-secondary border border-secondary text-light p-2">
-                                <i class="bi bi-person-fill"></i> 
-                                <%= isAdmin ? '管理员: ' : '' %><%= currentUser %>
-                            </span>
-                        </a>
-                        <!-- 写文章按钮 -->
-                        <a href="/articles/new" class="btn btn-success btn-sm">
-                            <i class="bi bi-pencil-square"></i> 写文章
-                        </a>
-                        <!-- 退出按钮 -->
-                        <a href="/auth/logout" class="btn btn-outline-light btn-sm">退出</a>
+                        <li class="nav-item">
+                            <a href="/articles/new" class="btn btn-gradient-primary btn-sm rounded-pill px-3 shadow-sm"><i class="bi bi-plus-lg"></i> 写文章</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle fw-bold text-dark d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                                <img src="<%= currentAvatar ? currentAvatar : `https://ui-avatars.com/api/?name=${currentUser}&background=0D8ABC&color=fff` %>" class="rounded-circle border" width="32" height="32" style="object-fit: cover;">
+                                <span><%= currentUser %></span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3 mt-2">
+                                <li><a class="dropdown-item" href="/auth/profile"><i class="bi bi-person me-2"></i> 个人中心</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="/auth/logout"><i class="bi bi-box-arrow-right me-2"></i> 退出</a></li>
+                            </ul>
+                        </li>
                     <% } else { %>
-                        <a href="/auth/login" class="btn btn-outline-light btn-sm">登录</a>
-                        <a href="/auth/register" class="btn btn-primary btn-sm">注册</a>
+                        <li class="nav-item"><a href="/auth/login" class="btn btn-glass-secondary btn-sm rounded-pill px-3">登录</a></li>
+                        <li class="nav-item"><a href="/auth/register" class="btn btn-gradient-primary btn-sm rounded-pill px-4 shadow-sm">注册</a></li>
                     <% } %>
-                </div>
+                </ul>
             </div>
         </div>
     </nav>
 
     <div class="container">
-        <!-- ================= 头部欢迎语 ================= -->
-        <div class="text-center py-4 mb-4">
-            <h2 class="fw-light display-5">思维流淌的地方</h2>
-            <p class="text-muted lead">分享技术、生活与灵感</p>
-        </div>
-
-        <!-- ================= 文章列表循环 ================= -->
         <div class="row g-4">
-            <% articles.forEach(article => { %>
-                <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm border-0 overflow-hidden">
-                        
-                        <!-- ★★★ [新增] 封面图片显示逻辑 ★★★ -->
-                        <% if (article.cover) { %>
-                            <img src="<%= article.cover %>" class="card-img-top cover-img" alt="文章封面">
-                        <% } else { %>
-                            <!-- 如果没有封面，显示一个灰色的占位条，保持对齐（可选） -->
-                            <div class="bg-light border-bottom" style="height: 10px;"></div>
-                        <% } %>
-
-                        <div class="card-body d-flex flex-column">
-                            <!-- 标题 -->
-                            <h4 class="card-title h5">
-                                <a href="/articles/<%= article.id %>" class="text-decoration-none text-dark fw-bold stretched-link">
-                                    <%= article.title %>
-                                </a>
-                            </h4>
-                            
-                            <!-- 信息栏：作者 + 时间 -->
-                            <div class="text-muted small mb-3 d-flex align-items-center">
-                                <span class="me-2">
-                                    <i class="bi bi-person"></i> 
-                                    <%= article.author ? article.author.username : '匿名' %>
-                                </span>
-                                <span>
-                                    <i class="bi bi-clock"></i> 
-                                    <%= article.createdAt.toLocaleDateString() %>
-                                </span>
+            
+            <!-- ================= 左侧侧边栏 (粘性) ================= -->
+            <div class="col-lg-3">
+                <div class="sidebar-sticky">
+                    
+                    <!-- 1. 搜索卡片 -->
+                    <div class="glass-panel search-box-card p-4 mb-4 text-center shadow-sm">
+                        <h5 class="fw-bold mb-1">My Life</h5>
+                        <p class="small opacity-75 mb-3">记录思维的每一个瞬间</p>
+                        <form action="/articles/search" method="GET">
+                            <div class="position-relative">
+                                <input type="text" name="q" class="form-control form-control-sm custom-search-input rounded-pill" placeholder="搜索...">
+                                <button class="btn btn-sm text-white position-absolute top-0 end-0 mt-1 me-1" type="submit"><i class="bi bi-search"></i></button>
                             </div>
+                        </form>
+                    </div>
 
-                            <!-- 简介 -->
-                            <p class="card-text text-secondary small flex-grow-1">
-                                <%= article.description || '暂无简介...' %>
-                            </p>
+                    <!-- 2. 个人信息卡片 -->
+                    <div class="glass-panel p-4 text-center mb-4">
+                        <% if (currentUser) { %>
+                            <!-- ★★★ [修改] 包裹链接，点击跳转个人中心 ★★★ -->
+                            <a href="/auth/profile" class="text-decoration-none text-dark d-block hover-card-link">
+                                <div class="mb-3 position-relative d-inline-block">
+                                    <img src="<%= currentAvatar ? currentAvatar : `https://ui-avatars.com/api/?name=${currentUser}&background=0D8ABC&color=fff&size=128` %>" class="sidebar-profile-img" style="object-fit: cover;">
+                                </div>
+                                <h5 class="fw-bold mb-2"><%= currentUser %> <i class="bi bi-chevron-right small text-muted" style="font-size: 0.8em;"></i></h5>
+                            </a>
+
+                            <p class="text-muted small mb-4 px-2"><%= currentBio || '这个人很懒，什么也没写。' %></p>
                             
-                            <!-- 底部按钮栏 -->
-                            <div class="mt-3 d-flex justify-content-between align-items-center" style="position: relative; z-index: 2;">
-                                <a href="/articles/<%= article.id %>" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                                    阅读全文
-                                </a>
+                            <div class="d-flex justify-content-center text-center mb-3">
+                                <div class="px-4 border-end">
+                                    <span class="d-block fw-bold h4 mb-0"><%= articles.length %></span>
+                                    <span class="small text-muted">全站文章</span>
+                                </div>
+                                <div class="px-4">
+                                    <!-- ★★★ 显示真实获赞数 ★★★ -->
+                                    <span class="d-block fw-bold h4 mb-0"><%= totalLikesReceived %></span>
+                                    <span class="small text-muted">获赞</span>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <a href="/articles/new" class="btn btn-gradient-primary btn-sm rounded-pill shadow-sm"><i class="bi bi-pencil-fill"></i> 开始创作</a>
+                            </div>
+                        <% } else { %>
+                            <!-- 未登录状态 -->
+                            <div class="mb-3">
+                                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="bi bi-person-fill text-secondary" style="font-size: 2.5rem;"></i>
+                                </div>
+                            </div>
+                            <h5 class="fw-bold mb-2">欢迎来到 MindFlow</h5>
+                            <p class="text-muted small mb-4">这里是思维流淌的地方。<br>登录后分享你的世界。</p>
+                            <div class="d-grid gap-2 col-10 mx-auto">
+                                <a href="/auth/login" class="btn btn-glass-secondary btn-sm rounded-pill">立即登录</a>
+                                <a href="/auth/register" class="btn btn-gradient-primary btn-sm rounded-pill shadow-sm">注册账号</a>
+                            </div>
+                        <% } %>
+                    </div>
 
-                                <!-- ★★★ 管理员删除按钮 ★★★ -->
-                                <% if (isAdmin) { %>
-                                    <form action="/articles/<%= article.id %>?_method=DELETE" method="POST" onsubmit="return confirm('管理员操作：确定要强制删除这篇文章吗？');">
-                                        <button type="submit" class="btn btn-outline-danger btn-sm border-0" title="删除">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                <% } %>
+                    <!-- 3. 底部版权 -->
+                    <div class="text-center mt-3">
+                         <a href="/about" class="text-decoration-none text-muted small hover-underline"><i class="bi bi-info-circle"></i> 关于本站</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= 右侧文章流 ================= -->
+            <div class="col-lg-9">
+                <% if (articles.length === 0) { %>
+                    <div class="glass-panel p-5 text-center bg-white">
+                        <i class="bi bi-journal-album display-4 text-secondary opacity-50"></i>
+                        <p class="mt-3 text-muted">暂时没有文章，去写一篇吧</p>
+                    </div>
+                <% } %>
+
+                <% articles.forEach(article => { %>
+                    <div class="article-card">
+                        <!-- 封面 -->
+                        <div class="card-img-wrap">
+                            <% if (article.cover) { %>
+                                <img src="<%= article.cover %>" alt="Cover">
+                            <% } else { %>
+                                <div class="default-placeholder"><i class="bi bi-fonts"></i></div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="card-content">
+                            <!-- 标题全链接 -->
+                            <h3 class="h5 fw-bold mb-2">
+                                <a href="/articles/<%= article.id %>" class="text-decoration-none text-dark stretched-link"><%= article.title %></a>
+                            </h3>
+                            <p class="text-secondary small mb-3 text-truncate"><%= article.description || '点击阅读全文...' %></p>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                
+                                <!-- 左边信息 -->
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <span class="meta-badge"><i class="bi bi-person"></i> <%= article.author ? article.author.username : '匿名' %></span>
+                                    <span class="meta-badge"><i class="bi bi-clock"></i> <%= article.createdAt.toLocaleDateString() %></span>
+                                </div>
+
+                                <!-- ★★★ [修复] 右边操作区 (独立层级，防抽搐) ★★★ -->
+                                <div class="action-buttons">
+                                    
+                                    <!-- 点赞按钮 -->
+                                    <% const isLiked = currentUserId && article.likes.includes(currentUserId); %>
+                                    <div class="btn-like-container" onclick="event.preventDefault(); event.stopPropagation(); toggleLike(this, '<%= article.id %>')">
+                                        <i class="bi <%= isLiked ? 'bi-heart-fill' : 'bi-heart' %> btn-like <%= isLiked ? 'liked' : '' %>"></i>
+                                        <span class="like-count"><%= article.likes.length %></span>
+                                    </div>
+
+                                    <!-- 管理员删除 -->
+                                    <% if (isAdmin) { %>
+                                        <form action="/articles/<%= article.id %>?_method=DELETE" method="POST" class="m-0" 
+                                              onsubmit="return confirm('管理员操作：确定删除？');" 
+                                              onclick="event.stopPropagation();">
+                                            <button type="submit" class="btn btn-sm text-danger border-0 p-0 ms-2" title="删除"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    <% } %>
+                                </div>
+
                             </div>
                         </div>
                     </div>
-                </div>
-            <% }) %>
-
-            <!-- 空状态处理 -->
-            <% if (articles.length === 0) { %>
-                <div class="col-12 text-center py-5 bg-white rounded shadow-sm">
-                    <i class="bi bi-inbox display-4 text-muted"></i>
-                    <p class="text-muted mt-3">暂时还没有文章，快去发布第一篇吧！</p>
-                    <% if (currentUser) { %>
-                        <a href="/articles/new" class="btn btn-primary btn-lg mt-2">开始创作</a>
-                    <% } %>
-                </div>
-            <% } %>
+                <% }) %>
+            </div>
         </div>
     </div>
 
-    <!-- ================= 底部版权 ================= -->
-   <footer class="text-center text-muted py-5 mt-5 border-top bg-white">
-        <div class="container">
-            <p class="mb-2">&copy; 2026 MindFlow Blog System.</p>
-            <div>
-                <a href="/about" class="text-decoration-none text-secondary me-3">关于本站</a>
-            </div>
-        </div>
-    </footer>
+    <!-- 底部垫高 -->
+    <div class="py-5"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 点赞脚本 -->
+    <script>
+        async function toggleLike(btnContainer, articleId) {
+            try {
+                const res = await fetch(`/articles/${articleId}/like`, { method: 'POST' });
+                const data = await res.json();
+
+                if (res.status === 401) {
+                    alert('请先登录再点赞！');
+                    window.location.href = '/auth/login';
+                    return;
+                }
+
+                if (data.success) {
+                    const icon = btnContainer.querySelector('i');
+                    const countSpan = btnContainer.querySelector('.like-count');
+
+                    if (icon.classList.contains('bi-heart')) {
+                        icon.classList.replace('bi-heart', 'bi-heart-fill');
+                        icon.classList.add('liked');
+                    } else {
+                        icon.classList.replace('bi-heart-fill', 'bi-heart');
+                        icon.classList.remove('liked');
+                    }
+                    countSpan.innerText = data.likesCount;
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
 </body>
 </html>

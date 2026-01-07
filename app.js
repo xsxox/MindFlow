@@ -6,12 +6,12 @@ const methodOverride = require('method-override');
 const path = require('path');
 
 // --- 引入路由文件 ---
-const articleRouter = require('./routes/articles'); // 文章路由
-const commentRouter = require('./routes/comments'); // 评论路由
-const authRouter = require('./routes/auth');        // 认证路由
+const articleRouter = require('./routes/articles'); // 文章路由 (增删改查+点赞)
+const commentRouter = require('./routes/comments'); // 评论路由 (Ajax接口)
+const authRouter = require('./routes/auth');        // 认证路由 (登录注册+个人中心)
 
 // --- 引入模型 ---
-const Article = require('./models/Article');
+const Article = require('./models/Article');        // 首页需要查询文章
 
 const app = express();
 
@@ -21,57 +21,103 @@ mongoose.connect('mongodb://127.0.0.1:27017/mindflow')
     .catch(err => console.log('!! 数据库连接失败:', err));
 
 // ================= 2. 基础配置 =================
+// 设置视图引擎为 EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public'))); // 静态资源
-app.use(express.urlencoded({ extended: false }));        // 解析表单
-app.use(express.json());                                 // 解析 Ajax JSON
-app.use(methodOverride('_method'));                      // 支持 PUT/DELETE
+
+// 静态资源文件夹 (CSS, JS, 图片)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// 解析请求体
+app.use(express.urlencoded({ extended: false })); // 处理普通表单
+app.use(express.json());                          // 处理 Ajax JSON 数据
+
+// 支持 PUT 和 DELETE 请求 (通过 ?_method=DELETE)
+app.use(methodOverride('_method'));
 
 // ================= 3. Session 配置 =================
+// 注意：必须在路由之前配置
 app.use(session({
-    secret: 'mindflow_secret_key_2026', 
+    secret: 'mindflow_secret_key_2026', // 密钥
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 24 } // 1天
+    cookie: { 
+        maxAge: 1000 * 60 * 60 * 24 // Cookie 有效期 1 天
+    }
 }));
 
-// ================= 4. 全局中间件 (变量注入) =================
+// ================= 4. 全局中间件 =================
+// 作用：把 Session 里的用户信息传给所有的 EJS 页面，不用每个路由都写一遍
 app.use((req, res, next) => {
+    // 1. 当前登录用户名
     res.locals.currentUser = req.session.username;
+    
+    // 2. 当前登录用户ID (用于判断是否是作者/点赞逻辑)
     res.locals.currentUserId = req.session.userId;
+    
+    // 3. 是否为管理员 (用于显示红色删除按钮)
     res.locals.isAdmin = (req.session.role === 'admin');
+
+    // 4. 个人简介 (用于侧边栏显示)
+    res.locals.currentBio = req.session.bio;
+
+    // 5. 头像 (用于导航栏和侧边栏)
+    res.locals.currentAvatar = req.session.avatar;
+    
     next();
 });
 
-// ================= 5. 核心页面路由 =================
-
-// 首页
+// ================= 5. 首页路由 =================
 app.get('/', async (req, res) => {
     try {
-        const articles = await Article.find().populate('author').sort({ createdAt: 'desc' });
-        res.render('index', { articles: articles });
+        // 1. 查询所有文章 (用于中间列表显示)
+        // .populate('author') 把 author ID 变成具体的作者对象
+        const articles = await Article.find()
+                                      .populate('author')
+                                      .sort({ createdAt: 'desc' });
+        
+        // 2. 计算当前登录用户的“获赞总量” (用于侧边栏显示)
+        let totalLikesReceived = 0;
+        if (req.session.userId) {
+            // 查我自己写的所有文章
+            const myArticles = await Article.find({ author: req.session.userId });
+            // 累加每篇文章的点赞数
+            myArticles.forEach(article => {
+                totalLikesReceived += article.likes.length;
+            });
+        }
+        
+        // 3. 渲染页面
+        res.render('index', { 
+            articles: articles,
+            totalLikesReceived: totalLikesReceived // 传给前端显示
+        });
+
     } catch (e) {
-        res.render('index', { articles: [] });
+        console.log(e);
+        res.render('index', { articles: [], totalLikesReceived: 0 }); // 报错时显示空列表
     }
 });
 
-// ★★★ [修复] 关于页路由 (必须放在 404 之前) ★★★
+// ================= 6. 其他页面路由 =================
+
+// 关于页面 (必须放在 404 之前)
 app.get('/about', (req, res) => {
     res.render('about');
 });
 
-// ================= 6. 挂载子路由 =================
-app.use('/articles', articleRouter);
-app.use('/api/comments', commentRouter);
-app.use('/auth', authRouter);
+// ================= 7. 挂载子路由 =================
+app.use('/articles', articleRouter);     // 访问 /articles/...
+app.use('/api/comments', commentRouter); // 访问 /api/comments
+app.use('/auth', authRouter);            // 访问 /auth/...
 
-// ================= 7. 404 错误处理 (必须在最后) =================
+// ================= 8. 404 错误处理 =================
+// 注意：这必须放在所有路由的 **最后面**
 app.use((req, res) => {
-    res.status(404).render('404'); 
+    res.status(404).render('404'); // 需要你有一个 views/404.ejs 文件
 });
 
-// ================= 8. 启动服务器 =================
+// ================= 9. 启动服务器 =================
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`>> MindFlow 服务器已启动: http://localhost:${PORT}`);

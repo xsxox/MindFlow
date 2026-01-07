@@ -1,42 +1,182 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <title>发布新文章 - MindFlow</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建文章 - MindFlow</title>
+    <!-- 引入 Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container mt-4">
-    <h1 class="mb-4">新建文章</h1>
+    <!-- 引入图标 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
-    <!-- ★★★ 关键：必须加 enctype="multipart/form-data" ★★★ -->
-    <form action="/articles" method="POST" enctype="multipart/form-data">
-        
-        <div class="row">
-            <div class="col-md-8">
-                <div class="mb-3">
-                    <label class="form-label">文章标题</label>
-                    <input type="text" name="title" required class="form-control" placeholder="请输入标题...">
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="mb-3">
-                    <!-- ★★★ [新增] 图片上传框 ★★★ -->
-                    <label class="form-label">封面图片 (可选)</label>
-                    <input type="file" name="cover" class="form-control" accept="image/*">
-                </div>
-            </div>
-        </div>
+    <style>
+        /* === 1. 全局背景 (保持一致) === */
+        body {
+            background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
+            min-height: 100vh;
+            color: #444;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
 
-        <div class="mb-3">
-            <label class="form-label">简介</label>
-            <textarea name="description" class="form-control" rows="2" placeholder="一句话介绍..."></textarea>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">内容 (Markdown)</label>
-            <textarea name="markdown" required class="form-control" rows="10" placeholder="开始写作..."></textarea>
-        </div>
+        /* === 2. 玻璃面板 === */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8); /* 稍微不透明一点，减少干扰 */
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* === 3. 导航栏样式 === */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 12px 0;
+        }
+        .brand-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        /* === 4. 定制输入框样式 === */
+        .form-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
         
-        <a href="/" class="btn btn-secondary">取消</a>
-        <button type="submit" class="btn btn-success">发布文章</button>
-    </form>
+        .form-control-glass {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control-glass:focus {
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15); /* 紫色光晕 */
+            border-color: #667eea;
+            outline: none;
+        }
+
+        /* 文件上传框美化 */
+        .form-control-file {
+            padding: 10px;
+        }
+
+        /* === 5. 按钮样式 === */
+        .btn-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            border-radius: 50px;
+            padding: 10px 30px;
+            transition: all 0.3s;
+        }
+        .btn-gradient-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-glass {
+            background: white;
+            border: 1px solid #ddd;
+            color: #666;
+            border-radius: 50px;
+            padding: 10px 30px;
+            transition: all 0.3s;
+        }
+        .btn-glass:hover {
+            background: #f8f9fa;
+            color: #333;
+            border-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 (简化版，专注写作) -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom sticky-top mb-5">
+        <div class="container">
+            <a class="navbar-brand brand-gradient d-flex align-items-center gap-2" href="/">
+                <i class="bi bi-wind"></i> MindFlow
+            </a>
+            <div class="ms-auto">
+                <span class="text-muted small me-3 d-none d-md-inline">正在创作中...</span>
+                <a href="/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                    <i class="bi bi-x-lg"></i> 退出
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                
+                <!-- 写作主容器 -->
+                <div class="glass-panel p-5">
+                    
+                    <!-- 标题区 -->
+                    <div class="d-flex align-items-center mb-4 border-bottom pb-3">
+                        <h2 class="fw-bold mb-0 text-dark">
+                            <i class="bi bi-feather text-primary me-2"></i> 新建文章
+                        </h2>
+                    </div>
+
+                    <!-- 表单 -->
+                    <form action="/articles" method="POST" enctype="multipart/form-data">
+                        
+                        <!-- 第一行：标题 + 封面 -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-7">
+                                <label class="form-label"><i class="bi bi-type-h1"></i> 文章标题</label>
+                                <input type="text" name="title" required class="form-control form-control-glass fs-5 fw-bold" placeholder="请输入一个吸引人的标题...">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label"><i class="bi bi-image"></i> 封面图片 (可选)</label>
+                                <input type="file" name="cover" class="form-control form-control-glass form-control-file" accept="image/*">
+                            </div>
+                        </div>
+
+                        <!-- 简介 -->
+                        <div class="mb-4">
+                            <label class="form-label"><i class="bi bi-quote"></i> 简介 / 摘要</label>
+                            <textarea name="description" class="form-control form-control-glass" rows="2" placeholder="用一句话概括这篇文章..."></textarea>
+                        </div>
+
+                        <!-- 正文编辑器 -->
+                        <div class="mb-5">
+                            <label class="form-label d-flex justify-content-between">
+                                <span><i class="bi bi-markdown-fill"></i> 内容 (Markdown)</span>
+                                <span class="badge bg-light text-secondary border">支持 Markdown 语法</span>
+                            </label>
+                            <textarea name="markdown" required class="form-control form-control-glass font-monospace" rows="15"></textarea>
+                        </div>
+                        
+                        <!-- 底部操作栏 -->
+                        <div class="d-flex justify-content-end gap-3 align-items-center">
+                            <a href="/" class="btn btn-glass">取消</a>
+                            <button type="submit" class="btn btn-gradient-primary">
+                                <i class="bi bi-send-fill me-1"></i> 发布文章
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+                
+                <div class="text-center mt-4 text-muted small">
+                    <p>MindFlow 自动保存系统尚未上线，请记得手动发布哦。</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

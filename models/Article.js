@@ -26,7 +26,11 @@ const articleSchema = new mongoose.Schema({
     cover: {
         type: String,
         default: null // 默认为空，表示没传图片
-    }
+    },
+
+    likes: [
+        { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    ]
 });
 
 module.exports = mongoose.model('Article', articleSchema);

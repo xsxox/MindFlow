@@ -15,6 +15,15 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         default: 'visitor' // 默认是访客，管理员可以是 'admin'
+    },
+
+    bio: { 
+        type: String, 
+    },
+
+    avatar: {
+        type: String,
+        default: '' // 默认为空，前端会处理默认头像
     }
 });
 

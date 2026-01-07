@@ -112,4 +112,35 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+router.post('/:id/like', async (req, res) => {
+    // 1. 如果没登录，返回 401 错误
+    if (!req.session.userId) {
+        return res.status(401).json({ success: false, message: '请先登录' });
+    }
+
+    try {
+        const article = await Article.findById(req.params.id);
+        const userId = req.session.userId;
+
+        // 2. 检查用户是否已经点过赞
+        const index = article.likes.indexOf(userId);
+
+        if (index === -1) {
+            // 没点过 -> 添加 ID (点赞)
+            article.likes.push(userId);
+        } else {
+            // 点过了 -> 移除 ID (取消赞)
+            article.likes.splice(index, 1);
+        }
+
+        await article.save();
+
+        // 3. 返回最新的点赞数
+        res.json({ success: true, likesCount: article.likes.length });
+    } catch (e) {
+        res.status(500).json({ success: false, message: '服务器错误' });
+    }
+});
+
+
 module.exports = router;
