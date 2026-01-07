@@ -21,6 +21,11 @@ const articleSchema = new mongoose.Schema({
     author: {
         type: mongoose.Schema.Types.ObjectId, // 存储的是用户的 ID
         ref: 'User'                           // 告诉 Mongoose 关联到 'User' 模型
+    },
+    
+    cover: {
+        type: String,
+        default: null // 默认为空，表示没传图片
     }
 });
 

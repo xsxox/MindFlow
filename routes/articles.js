@@ -2,66 +2,81 @@
 const express = require('express');
 const router = express.Router();
 const Article = require('../models/Article');
-const { marked } = require('marked'); // [新增] 引入转换工具
+const { marked } = require('marked');
+const multer = require('multer'); // [新增] 引入上传工具
+const path = require('path');
 
-// 1. 去写文章页面
+// ================= 配置 Multer (上传设置) =================
+const storage = multer.diskStorage({
+    // 指定上传文件存在哪里
+    destination: (req, file, cb) => {
+        cb(null, 'public/uploads'); 
+    },
+    // 给文件起个唯一的名字 (时间戳 + 后缀名)
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+// ================= GET 路由 =================
+
+// 1. 搜索
+router.get('/search', async (req, res) => {
+    const query = req.query.q;
+    if (!query) return res.redirect('/');
+    try {
+        const articles = await Article.find({ title: new RegExp(query, 'i') });
+        res.render('articles/search', { articles: articles, query: query });
+    } catch (e) {
+        res.redirect('/');
+    }
+});
+
+// 2. 新建文章页
 router.get('/new', (req, res) => {
     res.render('articles/new');
 });
 
-router.get('/search', async (req, res) => {
-    const query = req.query.q; // 获取 URL 中的 ?q=关键词
-    if (!query) {
-        return res.redirect('/');
-    }
-
+// 3. 编辑文章页
+router.get('/edit/:id', async (req, res) => {
     try {
-        // 使用正则表达式进行模糊匹配 (i表示忽略大小写)
-        const articles = await Article.find({
-            title: new RegExp(query, 'i') 
-        });
-        
-        // 渲染搜索结果页
-        res.render('articles/search', { 
-            articles: articles, 
-            query: query 
-        });
+        const article = await Article.findById(req.params.id);
+        if (req.session.role !== 'admin' && article.author.toString() !== req.session.userId) {
+            return res.send('无权编辑');
+        }
+        res.render('articles/edit', { article: article });
     } catch (e) {
-        console.log(e);
         res.redirect('/');
     }
 });
 
-
-// 2. [新增] 文章详情页 (必须放在 /new 下面，否则会冲突)
+// 4. 详情页
 router.get('/:id', async (req, res) => {
     try {
-        // ★★★ [修改] 加上 .populate('author')
-        // 它的意思是：去 User 表查这个 author ID，把查到的用户对象替换到 author 字段里
-        const article = await Article.findById(req.params.id).populate('author'); 
-        
-        if (article == null) res.redirect('/');
-        
+        const article = await Article.findById(req.params.id).populate('author');
+        if (!article) return res.redirect('/');
         const htmlContent = marked.parse(article.markdown);
         res.render('articles/show', { article: article, htmlContent: htmlContent });
     } catch (e) {
-        console.log(e);
         res.redirect('/');
     }
 });
 
-// 3. 保存文章
-router.post('/', async (req, res) => {
-    // [安全检查] 如果没登录，不能发文章 (防止报错)
-    if (!req.session.userId) {
-        return res.send("请先登录再发布文章！<a href='/auth/login'>去登录</a>");
-    }
+// ================= POST/PUT/DELETE 路由 =================
+
+// 5. ★★★ [关键修改] 发布文章 (支持文件上传) ★★★
+// upload.single('cover') 表示接收一个 name="cover" 的文件
+router.post('/', upload.single('cover'), async (req, res) => {
+    if (!req.session.userId) return res.send("请先登录！");
 
     let article = new Article({
         title: req.body.title,
         description: req.body.description,
         markdown: req.body.markdown,
-        author: req.session.userId // ★★★ [新增] 把作者ID存进去
+        author: req.session.userId,
+        // 如果上传了文件，就存路径；否则存 null
+        cover: req.file ? '/uploads/' + req.file.filename : null
     });
 
     try {
@@ -70,6 +85,30 @@ router.post('/', async (req, res) => {
     } catch (e) {
         console.log(e);
         res.render('articles/new', { article: article });
+    }
+});
+
+// 6. 更新文章 (暂时不处理图片更新，为了简化作业)
+router.put('/:id', async (req, res) => {
+    try {
+        let article = await Article.findById(req.params.id);
+        article.title = req.body.title;
+        article.description = req.body.description;
+        article.markdown = req.body.markdown;
+        await article.save();
+        res.redirect(`/articles/${article.id}`);
+    } catch (e) {
+        res.redirect('/');
+    }
+});
+
+// 7. 删除文章
+router.delete('/:id', async (req, res) => {
+    try {
+        await Article.findByIdAndDelete(req.params.id);
+        res.redirect('/'); 
+    } catch (e) {
+        res.redirect('/');
     }
 });
 
