@@ -1,0 +1,17 @@
+node_modules/
+package-lock.json
+
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+
+.vscode/
+.idea/
+
+.env
+
+# --- 用户上传的文件 (代码库不应该包含用户数据) ---
+# 保留 uploads 文件夹本身，但忽略里面的图片
+public/uploads/*
+!public/uploads/.gitkeep
