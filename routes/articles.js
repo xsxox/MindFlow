@@ -9,38 +9,66 @@ router.get('/new', (req, res) => {
     res.render('articles/new');
 });
 
+router.get('/search', async (req, res) => {
+    const query = req.query.q; // 获取 URL 中的 ?q=关键词
+    if (!query) {
+        return res.redirect('/');
+    }
+
+    try {
+        // 使用正则表达式进行模糊匹配 (i表示忽略大小写)
+        const articles = await Article.find({
+            title: new RegExp(query, 'i') 
+        });
+        
+        // 渲染搜索结果页
+        res.render('articles/search', { 
+            articles: articles, 
+            query: query 
+        });
+    } catch (e) {
+        console.log(e);
+        res.redirect('/');
+    }
+});
+
+
 // 2. [新增] 文章详情页 (必须放在 /new 下面，否则会冲突)
 router.get('/:id', async (req, res) => {
     try {
-        const article = await Article.findById(req.params.id);
+        // ★★★ [修改] 加上 .populate('author')
+        // 它的意思是：去 User 表查这个 author ID，把查到的用户对象替换到 author 字段里
+        const article = await Article.findById(req.params.id).populate('author'); 
+        
         if (article == null) res.redirect('/');
         
-        // 把 Markdown 转换成 HTML
         const htmlContent = marked.parse(article.markdown);
-        
-        // 渲染 show.ejs，并传过去文章数据和转换后的HTML
-        res.render('articles/show', { 
-            article: article,
-            htmlContent: htmlContent 
-        });
+        res.render('articles/show', { article: article, htmlContent: htmlContent });
     } catch (e) {
-        console.log(e); // 如果ID格式不对，回首页
+        console.log(e);
         res.redirect('/');
     }
 });
 
 // 3. 保存文章
 router.post('/', async (req, res) => {
+    // [安全检查] 如果没登录，不能发文章 (防止报错)
+    if (!req.session.userId) {
+        return res.send("请先登录再发布文章！<a href='/auth/login'>去登录</a>");
+    }
+
     let article = new Article({
         title: req.body.title,
         description: req.body.description,
-        markdown: req.body.markdown
+        markdown: req.body.markdown,
+        author: req.session.userId // ★★★ [新增] 把作者ID存进去
     });
+
     try {
         article = await article.save();
-        // 保存成功后，直接跳转到详情页看效果
         res.redirect(`/articles/${article.id}`);
     } catch (e) {
+        console.log(e);
         res.render('articles/new', { article: article });
     }
 });

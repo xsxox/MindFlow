@@ -1,29 +1,27 @@
 // models/Article.js
 const mongoose = require('mongoose');
 
-// 定义文章的Schema
 const articleSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true // 标题必填
+        required: true
     },
     description: {
-        type: String // 文章简介
+        type: String
     },
     markdown: {
         type: String,
-        required: true // 文章正文
+        required: true
     },
     createdAt: {
         type: Date,
-        default: Date.now // 创建时间，默认当前
+        default: Date.now
     },
-    // 封面图路径
-    coverImage: {
-        type: String, 
-        default: '' 
+    // ★★★ [关键修复] 你之前漏掉了这段代码 ★★★
+    author: {
+        type: mongoose.Schema.Types.ObjectId, // 存储的是用户的 ID
+        ref: 'User'                           // 告诉 Mongoose 关联到 'User' 模型
     }
 });
 
-// 导出模型
 module.exports = mongoose.model('Article', articleSchema);

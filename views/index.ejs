@@ -3,42 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindFlow</title>
+    <title>MindFlow - 首页</title>
+    <!-- 引入 Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card:hover { transform: translateY(-2px); transition: all 0.2s; }
+    </style>
 </head>
 <body class="bg-light">
-    
+
     <!-- 导航栏 -->
-    <nav class="navbar navbar-dark bg-dark mb-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top mb-4">
         <div class="container">
-            <a class="navbar-brand" href="/">MindFlow</a>
-            <div>
-                <a href="/articles/new" class="btn btn-success btn-sm">+ 写文章</a>
+            <a class="navbar-brand fw-bold" href="/">MindFlow</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto d-flex align-items-center gap-2">
+                    
+                    <!-- 1. 搜索表单 -->
+                    <form action="/articles/search" method="GET" class="d-flex me-2">
+                        <input class="form-control form-control-sm" type="search" name="q" placeholder="搜索文章..." required>
+                        <button class="btn btn-outline-light btn-sm ms-1" type="submit">搜</button>
+                    </form>
+
+                    <!-- 2. 用户状态判断 -->
+                    <% if (currentUser) { %>
+                        <span class="text-light small me-2">
+                            <i class="bi bi-person-circle"></i> 欢迎, <strong><%= currentUser %></strong>
+                        </span>
+                        <a href="/articles/new" class="btn btn-success btn-sm">+ 写文章</a>
+                        <a href="/auth/logout" class="btn btn-secondary btn-sm">退出</a>
+                    <% } else { %>
+                        <a href="/auth/login" class="btn btn-outline-light btn-sm">登录</a>
+                        <a href="/auth/register" class="btn btn-primary btn-sm">注册</a>
+                    <% } %>
+                </div>
             </div>
         </div>
     </nav>
 
     <div class="container">
-        <h2 class="mb-4">最新文章</h2>
-        
-        <!-- EJS 循环遍历文章 -->
+        <!-- 头部欢迎语 -->
+        <div class="text-center py-4">
+            <h2 class="fw-light">探索思维的流动</h2>
+            <p class="text-muted">分享技术、生活与灵感</p>
+        </div>
+
+        <!-- 文章列表循环 -->
         <div class="row">
             <% articles.forEach(article => { %>
                 <div class="col-md-12 mb-3">
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm border-0">
                         <div class="card-body">
-                            <h4 class="card-title"><%= article.title %></h4>
-                            <div class="text-muted small mb-2">
-                                发布于: <%= article.createdAt.toLocaleDateString() %>
+                            <!-- 标题 -->
+                            <h4 class="card-title">
+                                <a href="/articles/<%= article.id %>" class="text-decoration-none text-dark"><%= article.title %></a>
+                            </h4>
+                            
+                            <!-- 信息栏：作者 + 时间 -->
+                            <div class="text-muted small mb-2 d-flex align-items-center">
+                                <span class="badge bg-light text-dark border me-2">
+                                    <!-- ★★★ 作者显示逻辑 (防止旧数据报错) ★★★ -->
+                                    @<%= article.author ? article.author.username : '匿名' %>
+                                </span>
+                                <span>
+                                    <%= article.createdAt.toLocaleDateString() %> 
+                                    <%= article.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                </span>
                             </div>
-                            <p class="card-text text-secondary"><%= article.description %></p>
-                            <a href="/articles/<%= article.id %>" class="btn btn-primary btn-sm">阅读全文</a>
+
+                            <!-- 简介 -->
+                            <p class="card-text text-secondary text-truncate">
+                                <%= article.description || '暂无简介...' %>
+                            </p>
+                            
+                            <!-- 阅读按钮 -->
+                            <a href="/articles/<%= article.id %>" class="btn btn-outline-primary btn-sm">阅读全文 &rarr;</a>
                         </div>
                     </div>
                 </div>
             <% }) %>
+
+            <!-- 空状态处理 -->
+            <% if (articles.length === 0) { %>
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">暂时还没有文章，快去发布第一篇吧！</p>
+                    <% if (currentUser) { %>
+                        <a href="/articles/new" class="btn btn-primary">写文章</a>
+                    <% } %>
+                </div>
+            <% } %>
         </div>
     </div>
 
+    <!-- 底部版权 -->
+    <footer class="text-center text-muted py-4 mt-5 border-top">
+        <small>&copy; 2024 MindFlow Blog System.</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

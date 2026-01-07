@@ -4,98 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= article.title %> - MindFlow</title>
-    <!-- 引入 Bootstrap 样式 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* 针对文章内容的简单样式优化 */
-        .article-content img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin: 10px 0;
-        }
-        .article-content h1, .article-content h2, .article-content h3 {
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .article-content p {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #333;
-        }
-        pre {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-        }
+        .article-content { font-size: 1.1rem; line-height: 1.8; color: #2c3e50; }
+        .article-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0; }
+        .article-content h1, h2, h3 { margin-top: 1.5rem; color: #000; }
+        .article-content pre { background: #f8f9fa; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        .article-content blockquote { border-left: 4px solid #ccc; padding-left: 1rem; color: #666; }
     </style>
 </head>
 <body class="bg-light">
 
-    <!-- 顶部导航栏 -->
+    <!-- 导航栏 (与首页保持一致) -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="/">MindFlow</a>
             <div class="navbar-nav ms-auto">
-                <a href="/articles/new" class="nav-link">写文章</a>
+                <% if (currentUser) { %>
+                     <span class="nav-link text-light me-2">Hi, <%= currentUser %></span>
+                <% } %>
+                <a href="/" class="nav-link text-light">返回首页</a>
             </div>
         </div>
     </nav>
 
     <div class="container">
         
-        <!-- ================= 文章主体区域 ================= -->
+        <!-- ================= 文章卡片 ================= -->
         <div class="card shadow-sm mb-5">
             <div class="card-body p-4 p-md-5">
-                <!-- 1. 标题 -->
-                <h1 class="fw-bold mb-3"><%= article.title %></h1>
+                <!-- 标题 -->
+                <h1 class="fw-bold mb-3 display-5"><%= article.title %></h1>
                 
-                <!-- 2. 信息栏 -->
-                <div class="text-muted border-bottom pb-3 mb-4 d-flex justify-content-between align-items-center">
-                    <span>
-                        <i class="bi bi-clock"></i> 发布于: <%= article.createdAt.toLocaleString() %>
-                    </span>
-                    <!-- 预留的编辑按钮，暂时先放个样子 -->
-                    <a href="#" class="btn btn-outline-secondary btn-sm disabled">编辑</a>
+                <!-- 作者与时间信息 -->
+                <div class="d-flex align-items-center text-muted border-bottom pb-3 mb-4">
+                    <div class="me-3">
+                        作者: 
+                        <!-- ★★★ 作者显示逻辑 ★★★ -->
+                        <strong class="text-primary">
+                            @<%= article.author ? article.author.username : '匿名用户' %>
+                        </strong>
+                    </div>
+                    <div>
+                        发布于: <%= article.createdAt.toLocaleString() %>
+                    </div>
                 </div>
 
-                <!-- 3. 文章内容 (渲染转换后的 HTML) -->
+                <!-- 正文内容 (渲染 Markdown 转换后的 HTML) -->
                 <div class="article-content">
-                    <!-- <%- %> 用于输出非转义的 HTML 代码 -->
                     <%- htmlContent %>
                 </div>
 
-                <!-- 4. 底部返回按钮 -->
-                <div class="mt-5 border-top pt-4">
-                    <a href="/" class="btn btn-secondary">&larr; 返回文章列表</a>
+                <!-- 底部操作栏 -->
+                <div class="mt-5 pt-4 border-top">
+                    <a href="/" class="btn btn-outline-secondary">&larr; 返回列表</a>
                 </div>
             </div>
         </div>
 
 
-        <!-- ================= 评论区 (Ajax 核心部分) ================= -->
+        <!-- ================= 评论区 (Ajax) ================= -->
         <div class="card shadow-sm mb-5">
             <div class="card-header bg-white py-3">
-                <h5 class="m-0">评论区</h5>
+                <h5 class="m-0 fw-bold">💬 评论区</h5>
             </div>
             <div class="card-body">
                 
-                <!-- 1. 评论列表容器 (JS 会把获取到的评论塞到这里) -->
-                <div id="comment-list" class="mb-4">
-                    <div class="text-center text-muted py-3">正在加载评论...</div>
-                </div>
+                <!-- 1. 评论输入框 -->
+                <% if (currentUser) { %>
+                    <div class="d-flex gap-2 align-items-start mb-4">
+                        <textarea 
+                            id="comment-content" 
+                            class="form-control" 
+                            rows="2" 
+                            placeholder="写下你的想法..."
+                        ></textarea>
+                        <button onclick="submitComment()" class="btn btn-primary text-nowrap px-4">发表</button>
+                    </div>
+                <% } else { %>
+                    <div class="alert alert-secondary mb-4">
+                        请 <a href="/auth/login" class="fw-bold">登录</a> 后发表评论
+                    </div>
+                <% } %>
 
-                <!-- 2. 发布评论表单 -->
-                <div class="d-flex gap-2 align-items-start">
-                    <textarea 
-                        id="comment-content" 
-                        class="form-control" 
-                        rows="2" 
-                        placeholder="写下你的想法... (支持 Ajax 无刷新提交)"
-                    ></textarea>
-                    <!-- 注意：这里绑定了 onclick 事件 -->
-                    <button onclick="submitComment()" class="btn btn-primary text-nowrap">发表评论</button>
+                <!-- 2. 评论列表容器 (JS 动态填充) -->
+                <div id="comment-list">
+                    <div class="text-center text-muted py-3">正在加载评论...</div>
                 </div>
 
             </div>
@@ -103,17 +97,17 @@
 
     </div>
 
-    <!-- ================= JavaScript 部分 ================= -->
+    <!-- ================= 脚本区域 ================= -->
     
-    <!-- 1. 将后端传递的文章 ID 赋值给前端 JS 变量 -->
+    <!-- 1. 传递 ID 给 JS -->
     <script>
         const articleId = "<%= article.id %>";
     </script>
 
-    <!-- 2. 引入 Bootstrap JS (可选，用于弹窗等) -->
+    <!-- 2. Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- 3. 引入我们自己写的 Ajax 逻辑脚本 -->
+    <!-- 3. Ajax 评论脚本 -->
     <script src="/js/comment.js"></script>
 
 </body>
