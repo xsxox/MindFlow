@@ -2,50 +2,55 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const Article = require('../models/Article'); // ★★★ 关键：必须引入文章模型
+const Article = require('../models/Article');
 
 // 1. 显示注册页
 router.get('/register', (req, res) => {
-    res.render('auth/register');
+    // 注册页也可能会用到 error 逻辑，为了保险，我们暂时也传个 null，或者你还没改注册页就不用管
+    res.render('auth/register', { error: null }); 
 });
 
 // 2. 处理注册
 router.post('/register', async (req, res) => {
     try {
-        // ★★★ [修改] 判断：如果用户名是 admin，角色设为 'admin'，否则是 'visitor'
         const role = (req.body.username === 'admin') ? 'admin' : 'visitor';
-
         const user = new User({
             username: req.body.username,
             password: req.body.password,
-            role: role // 写入数据库
+            role: role
         });
         await user.save();
         res.redirect('/auth/login');
     } catch (e) {
-        res.send("注册失败：" + e.message);
+        // 如果注册失败，也可以像登录一样返回错误信息
+        res.send("注册失败：" + e.message); 
     }
 });
 
-// 3. 显示登录页
+// 3. ★★★ [关键修复] 显示登录页 ★★★
 router.get('/login', (req, res) => {
-    res.render('auth/login');
+    // 必须传 { error: null }，否则 login.ejs 会报 "error is not defined"
+    res.render('auth/login', { error: null });
 });
 
 // 4. 处理登录
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    const user = await User.findOne({ username: username });
-    
-    if (user && user.password === password) {
-        req.session.userId = user._id;
-        req.session.username = user.username;
-        // ★★★ [新增] 把角色 role 也存进 session
-        req.session.role = user.role; 
+    try {
+        const user = await User.findOne({ username: username });
         
-        res.redirect('/');
-    } else {
-        res.send("登录失败 <a href='/auth/login'>重试</a>");
+        if (user && user.password === password) {
+            // 登录成功
+            req.session.userId = user._id;
+            req.session.username = user.username;
+            req.session.role = user.role;
+            res.redirect('/');
+        } else {
+            // ★★★ 登录失败：传具体的错误信息 ★★★
+            res.render('auth/login', { error: '用户名或密码错误，请检查！' });
+        }
+    } catch (e) {
+        res.render('auth/login', { error: '系统错误：' + e.message });
     }
 });
 
@@ -55,22 +60,15 @@ router.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// 6. ★★★ 个人中心路由 (你之前可能漏了这个) ★★★
+// 6. 个人中心
 router.get('/profile', async (req, res) => {
-    // 如果没登录，不允许访问
     if (!req.session.userId) {
         return res.redirect('/auth/login');
     }
-
     try {
-        // 查找当前用户写的所有文章
-        const myArticles = await Article.find({ author: req.session.userId })
-                                        .sort({ createdAt: 'desc' });
-        
-        // 渲染 profile 页面
+        const myArticles = await Article.find({ author: req.session.userId }).sort({ createdAt: 'desc' });
         res.render('auth/profile', { articles: myArticles });
     } catch (e) {
-        console.log(e);
         res.redirect('/');
     }
 });
