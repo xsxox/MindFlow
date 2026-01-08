@@ -5,16 +5,15 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        unique: true // 用户名必须唯一
+        unique: true
     },
     password: {
         type: String,
         required: true
     },
-    // 可以加一个 isAdmin 字段来区分管理员和普通用户
     role: {
         type: String,
-        default: 'visitor' // 默认是访客，管理员可以是 'admin'
+        default: 'visitor'
     },
 
     bio: { 
@@ -23,7 +22,7 @@ const userSchema = new mongoose.Schema({
 
     avatar: {
         type: String,
-        default: '' // 默认为空，前端会处理默认头像
+        default: ''
     }
 });
 

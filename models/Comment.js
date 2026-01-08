@@ -6,7 +6,7 @@ const commentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    // 关键：关联到具体的文章ID
+    // 关联到具体的文章ID
     article: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Article'

@@ -6,13 +6,10 @@ const { marked } = require('marked');
 const multer = require('multer'); // [新增] 引入上传工具
 const path = require('path');
 
-// ================= 配置 Multer (上传设置) =================
 const storage = multer.diskStorage({
-    // 指定上传文件存在哪里
     destination: (req, file, cb) => {
         cb(null, 'public/uploads'); 
     },
-    // 给文件起个唯一的名字 (时间戳 + 后缀名)
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
     }
@@ -65,8 +62,7 @@ router.get('/:id', async (req, res) => {
 
 // ================= POST/PUT/DELETE 路由 =================
 
-// 5. ★★★ [关键修改] 发布文章 (支持文件上传) ★★★
-// upload.single('cover') 表示接收一个 name="cover" 的文件
+// 5.upload.single('cover') 表示接收一个 name="cover" 的文件
 router.post('/', upload.single('cover'), async (req, res) => {
     if (!req.session.userId) return res.send("请先登录！");
 
@@ -88,7 +84,7 @@ router.post('/', upload.single('cover'), async (req, res) => {
     }
 });
 
-// 6. 更新文章 (暂时不处理图片更新，为了简化作业)
+// 6. 更新文章
 router.put('/:id', async (req, res) => {
     try {
         let article = await Article.findById(req.params.id);
@@ -126,10 +122,8 @@ router.post('/:id/like', async (req, res) => {
         const index = article.likes.indexOf(userId);
 
         if (index === -1) {
-            // 没点过 -> 添加 ID (点赞)
             article.likes.push(userId);
         } else {
-            // 点过了 -> 移除 ID (取消赞)
             article.likes.splice(index, 1);
         }
 

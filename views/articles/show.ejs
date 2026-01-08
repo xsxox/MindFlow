@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
     <style>
-        /* === 1. 全局背景 (保持一致) === */
+        /* === 1. 全局背景 */
         body {
             background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
             min-height: 100vh;
@@ -18,7 +18,7 @@
 
         /* === 2. 玻璃面板 === */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.85); /* 阅读页稍微不透明一点，保证文字清晰 */
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             border-radius: 20px;
@@ -46,7 +46,7 @@
             border-radius: 24px;
             overflow: hidden;
             position: relative;
-            margin-bottom: -80px; /* 让下面的内容卡片上浮遮住一点，更有层次感 */
+            margin-bottom: -80px;
             z-index: 1;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
@@ -57,7 +57,6 @@
             object-fit: cover;
         }
 
-        /* 无封面时的默认渐变头图 */
         .hero-placeholder {
             width: 100%;
             height: 100%;
@@ -74,8 +73,8 @@
         /* === 5. 文章内容容器 === */
         .article-container {
             position: relative;
-            z-index: 2; /* 浮在头图上面 */
-            padding: 60px; /* 大留白 */
+            z-index: 2;
+            padding: 60px;
         }
 
         /* 标题样式 */
@@ -106,8 +105,8 @@
 
         /* 正文排版优化 */
         .article-content {
-            font-size: 1.15rem; /* 字号加大 */
-            line-height: 1.9;   /* 行高加大，呼吸感 */
+            font-size: 1.15rem;
+            line-height: 1.9;
             color: #444;
         }
         .article-content h1, .article-content h2 { margin-top: 2rem; margin-bottom: 1rem; font-weight: 700; color: #2d3436; }

@@ -6,13 +6,12 @@ const Article = require('../models/Article');
 const multer = require('multer');
 const path = require('path');
 
-// === 1. 配置上传 Multer (和文章上传类似) ===
+// === 1. 配置上传 Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'public/uploads');
     },
     filename: (req, file, cb) => {
-        // 给头像文件起名：user_时间戳.jpg
         cb(null, 'avatar_' + Date.now() + path.extname(file.originalname));
     }
 });
@@ -41,7 +40,6 @@ router.get('/profile', async (req, res) => {
         const user = await User.findById(req.session.userId);
         const myArticles = await Article.find({ author: req.session.userId }).sort({ createdAt: 'desc' });
         
-        // ★★★ [新增] 计算获赞总数 ★★★
         let totalLikes = 0;
         myArticles.forEach(article => {
             // article.likes 是一个数组，长度就是点赞数
@@ -52,7 +50,7 @@ router.get('/profile', async (req, res) => {
         res.render('auth/profile', { 
             currentUserObj: user, 
             articles: myArticles,
-            totalLikes: totalLikes // 传给前端
+            totalLikes: totalLikes
         });
     } catch (e) {
         console.log(e);
@@ -96,7 +94,6 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// ★★★ [新增] 更新个人资料 (头像 + 简介) ★★★
 router.post('/update', upload.single('avatar'), async (req, res) => {
     if (!req.session.userId) return res.redirect('/auth/login');
     
@@ -106,14 +103,12 @@ router.post('/update', upload.single('avatar'), async (req, res) => {
         // 更新简介
         user.bio = req.body.bio;
         
-        // 如果上传了新头像，更新字段
         if (req.file) {
             user.avatar = '/uploads/' + req.file.filename;
         }
         
         await user.save();
         
-        // ★ 关键：必须更新 Session，否则刷新页面还是旧数据
         req.session.bio = user.bio;
         req.session.avatar = user.avatar;
         

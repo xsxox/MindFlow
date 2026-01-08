@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 加载评论函数
 async function loadComments() {
-    // articleId 是我们在 show.ejs 里埋下的变量
     const res = await fetch(`/api/comments?articleId=${articleId}`);
     const comments = await res.json();
     
@@ -38,7 +37,7 @@ async function submitComment() {
 
     if (!content.trim()) return alert("写点什么吧！");
 
-    // 发送 POST 请求 (Ajax)
+    // 发送 POST 请求
     const res = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,8 +45,8 @@ async function submitComment() {
     });
 
     if (res.ok) {
-        input.value = ''; // 清空输入框
-        loadComments();   // 重新加载列表 (不需要刷新整个网页！)
+        input.value = '';
+        loadComments();
     } else {
         alert("评论失败");
     }

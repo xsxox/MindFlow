@@ -6,12 +6,12 @@ const methodOverride = require('method-override');
 const path = require('path');
 
 // --- 引入路由文件 ---
-const articleRouter = require('./routes/articles'); // 文章路由 (增删改查+点赞)
-const commentRouter = require('./routes/comments'); // 评论路由 (Ajax接口)
-const authRouter = require('./routes/auth');        // 认证路由 (登录注册+个人中心)
+const articleRouter = require('./routes/articles');
+const commentRouter = require('./routes/comments'); 
+const authRouter = require('./routes/auth');        
 
 // --- 引入模型 ---
-const Article = require('./models/Article');        // 首页需要查询文章
+const Article = require('./models/Article');
 
 const app = express();
 
@@ -36,7 +36,6 @@ app.use(express.json());                          // 处理 Ajax JSON 数据
 app.use(methodOverride('_method'));
 
 // ================= 3. Session 配置 =================
-// 注意：必须在路由之前配置
 app.use(session({
     secret: 'mindflow_secret_key_2026', // 密钥
     resave: false,
@@ -70,7 +69,7 @@ app.use((req, res, next) => {
 // ================= 5. 首页路由 =================
 app.get('/', async (req, res) => {
     try {
-        // 1. 查询所有文章 (用于中间列表显示)
+        // 1. 查询所有文章
         // .populate('author') 把 author ID 变成具体的作者对象
         const articles = await Article.find()
                                       .populate('author')
@@ -101,20 +100,18 @@ app.get('/', async (req, res) => {
 
 // ================= 6. 其他页面路由 =================
 
-// 关于页面 (必须放在 404 之前)
 app.get('/about', (req, res) => {
     res.render('about');
 });
 
 // ================= 7. 挂载子路由 =================
-app.use('/articles', articleRouter);     // 访问 /articles/...
-app.use('/api/comments', commentRouter); // 访问 /api/comments
-app.use('/auth', authRouter);            // 访问 /auth/...
+app.use('/articles', articleRouter); 
+app.use('/api/comments', commentRouter);
+app.use('/auth', authRouter);            
 
 // ================= 8. 404 错误处理 =================
-// 注意：这必须放在所有路由的 **最后面**
 app.use((req, res) => {
-    res.status(404).render('404'); // 需要你有一个 views/404.ejs 文件
+    res.status(404).render('404');
 });
 
 // ================= 9. 启动服务器 =================
