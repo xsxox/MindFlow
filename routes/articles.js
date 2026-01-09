@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const Article = require('../models/Article');
 const { marked } = require('marked');
-const multer = require('multer'); // [新增] 引入上传工具
+const multer = require('multer');
 const path = require('path');
 
 const storage = multer.diskStorage({
